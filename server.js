@@ -11,25 +11,28 @@ var server = http.createServer(function(req, res) {
 
 // Chargement de socket.io
 var io = require('socket.io').listen(server);
-
+var logged = false;
 io.sockets.on('connection', function (socket, pseudo) {
-
 
 
     // Quand un client se connecte, on lui envoie un message
     socket.emit('message', 'Vous êtes bien connecté !');
     // On signale aux autres clients qu'il y a un nouveau venu
-    socket.broadcast.emit('connexion', '');
 
     // Dès qu'on nous donne un pseudo, on le stocke en variable de session
     socket.on('petit_nouveau', function(pseudo) {
         socket.pseudo = pseudo;
+        // une fois connecté on broadcast le pseudo du joueur
+        socket.broadcast.emit('connexion', pseudo);
+        logged = true;
     });
+
     //écoute des position
     socket.on('position', function(position) {
-        console.log(socket.pseudo + ' position : ' + position);
-        socket.broadcast.emit('posJoueur',socket.pseudo + ' pos: ' + position);
-
+        if(logged){
+            console.log(socket.pseudo + ' position : ' + position);
+            socket.broadcast.emit('posJoueur',socket.pseudo + ' pos: ' + position);
+        }
     });
 
     // Dès qu'on reçoit un "message" (clic sur le bouton), on le note dans la console
@@ -42,6 +45,7 @@ io.sockets.on('connection', function (socket, pseudo) {
 
     });
 });
+
 
 
 server.listen(8080);

@@ -104,42 +104,55 @@
                     var bullet = new Bullet(camera, scene);
                     bullets.push(bullet);
                 });
-
-                // Lancement de la boucle principale
-                engine.runRenderLoop(function() {
-                    var joueurs=[];
-                    socket.emit('position', camera.position.toString());
-                    socket.on('connexion', function(joueur) {
-                        alert('un nouveau joueur viens de se connectier');
-                        // on cré le corps du nouveau joueur
-                        var box = BABYLON.Mesh.CreateBox(joueur, cubeSize, scene);
-                        box.position = new BABYLON.Vector3(random(0, 50),random(1, 50), random(0, 50));
-                        // on ajoute le joueur a notre tableau de joueurs
-                        joueur.push(box);
-
-                    })
-                    socket.on('posJoueur', function(pos) {
-                        //recuperer le nom du joueur
-                        var nomJoueur = pos.split('pos:')[0].trim();
-                        //recuperer la position du joueur
-                        var pos = pos.split('pos:')[1];
-                        //décomposer la position
-                        var x=pos.split(':')[1].trim().split('Y')[0];
-                        var y=pos.split(':')[2].trim().split('2')[0];
-                        var z=pos.split(':')[3].trim().split('}')[0];
-                        //retrouver le bon joueur parmit la liste
-
-                        for(var i=0, l=joueurs.length;i<l;i++ ){
-                            if(joueurs[i].id==nomJoueur){
-                                //actualiser la position de la boite
-                                joueurs[i].position = new BABYLON.Vector3(x,y,z);
-
-                            }
+                var joueurs=[];
+                socket.on('connexion', function(joueur) {
+                    alert(joueur+' viens de se connecter');
+                    // on cré le corps du nouveau joueur
+                    alert('scene : '+scene);
+                    try{
+                        var box = BABYLON.Mesh.CreateBox(joueur, 6.0, scene);
+                    }
+                    catch(e){
+                        alert(e);
+                    }
+                    box.position = new BABYLON.Vector3(random(0, 50),random(1, 50), random(0, 50));
+                    // on ajoute le joueur a notre tableau de joueurs
+                    joueurs.push(box);
+                })
+                socket.on('posJoueur', function(pos) {
+                    var nomJoueur = pos.split('pos:')[0].trim();
+                    //recuperer la position du joueur
+                    var pos = pos.split('pos:')[1];
+                    //décomposer la position
+                    var x=pos.split(':')[1].trim().split('Y')[0];
+                    var y=pos.split(':')[2].trim().split('2')[0];
+                    var z=pos.split(':')[3].trim().split('}')[0];
+                    //retrouver le bon joueur parmit la liste
+                    var test=1;
+                    for(var i=0, l=joueurs.length;i<l;i++ ){
+                        if(joueurs[i].id==nomJoueur){
+                            //actualiser la position de la boite
+                            joueurs[i].position = new BABYLON.Vector3(x,y,z);
+                            test=0;
                         }
 
+                    }
+                    if(test=1){
+                        socket.emit('message', 'impossible dacctualiser la position');
+
+                    }
+
+                })
+                var posjoueur;
+                // Lancement de la boucle principale
+                engine.runRenderLoop(function() {
+                    //on envoi au serveur notre position si celle ci change
+                    if(posjoueur!=camera.position.toString()){
+                        posjoueur=camera.position.toString()
+                        socket.emit('position', posjoueur);
+                    }
 
 
-                    })
                     socket.on('disconect', function(nomJoueur) {
                         for(var i=0, l=joueurs.length;i<l;i++ ){
                             if(joueurs[i].id==nomJoueur){
@@ -148,6 +161,7 @@
 
                             }
                         }
+                        alert('un joueur viens de se deconnecter');
                     })
                     var toRemove = [];
                     for (var i = 0, l = bullets.length; i < l; i++) {
