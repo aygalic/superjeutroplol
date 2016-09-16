@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8" />
+        <title>Woa tro lol</title>
+        <style>
+            body, html {
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+            }
+            canvas {
+                width: 100%;
+                height: 100%;
+            }
+
+            #crosshair {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                width: 5px;
+                height: 5px;
+                z-index: 999;
+                background-color: white;
+            }
+
+        </style>
+    </head>
+    <body>
+        <span id="crosshair"></span>
+        <canvas id="renderCanvas"></canvas>
+        <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+        <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+        <script>
+            var socket = io.connect('http://localhost:8080');
+
+            // On demande le pseudo au visiteur...
+            var pseudo = prompt('Quel est votre pseudo ?');
+            // Et on l'envoie avec le signal "petit_nouveau" (pour le différencier de "message")
+            socket.emit('petit_nouveau', pseudo);
+
+            // On affiche une boîte de dialogue quand le serveur nous envoie un "message"
+            socket.on('message', function(message) {
+                alert('Le serveur a un message pour vous : ' + message);
+            })
+        </script>
+        <script src="http://cdn.babylonjs.com/2-4/babylon.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/handjs/1.3.11/hand.min.js"></script>
+        <script>
+            function runDemo(canvasId) {
+                var canvas = document.getElementById(canvasId);
+                var engine = new BABYLON.Engine(canvas, true);
+
+                // Création de la scène
+                var scene = new BABYLON.Scene(engine);
+                scene.gravity = new BABYLON.Vector3(0, -9.81, 0);
+                scene.collisionsEnabled = true;
+
+                // Ajout d'une caméra et de son contrôleur
+                var camera = new BABYLON.FreeCamera("MainCamera", new BABYLON.Vector3(0, 2.5, 5), scene);
+                camera.applyGravity = true;
+                camera.checkCollisions = true;
+
+                camera.speed = 0.5;
+                camera.angularSensibility = 1000;
+
+                camera.keysUp = [90]; // Touche Z
+                camera.keysDown = [83]; // Touche S
+                camera.keysLeft = [81]; // Touche Q
+                camera.keysRight = [68]; // Touche D;
+                scene.activeCamera.attachControl(canvas);
+
+                // Ajout d'une lumière
+                var light = new BABYLON.PointLight("DirLight", new BABYLON.Vector3(0, 10, 0), scene);
+                light.diffuse = new BABYLON.Color3(1, 1, 1);
+                light.specular = new BABYLON.Color3(0.6, 0.6, 0.6);
+                light.intensity = 2.5;
+
+
+                //document.addEventListener("contextmenu", function (e) { e.preventDefault();	});
+
+                // On ajoute une skybox
+                createSkybox(scene);
+
+                // Enfin la scène de démo
+                createDemoScene(scene);
+
+                // Ajout du joueur
+                createPlayer(scene, camera);
+                // Gestion des saut
+                window.addEventListener("keyup", onKeyUp, false);
+                function onKeyUp(event) {
+                    switch (event.keyCode) {
+                        case 32:
+                            cameraJump(scene, camera);
+                            break;
+                    }
+                }
+                var bullets = [];
+                canvas.addEventListener("mouseup", function (e) {
+                    var bullet = new Bullet(camera, scene);
+                    bullets.push(bullet);
+                });
+
+                // Lancement de la boucle principale
+                engine.runRenderLoop(function() {
+                    var joueurs=[];
+                    socket.emit('position', camera.position.toString());
+                    socket.on('connexion', function(joueur) {
+                        alert('un nouveau joueur viens de se connectier');
+                        // on cré le corps du nouveau joueur
+                        var box = BABYLON.Mesh.CreateBox(joueur, cubeSize, scene);
+                        box.position = new BABYLON.Vector3(random(0, 50),random(1, 50), random(0, 50));
+                        // on ajoute le joueur a notre tableau de joueurs
+                        joueur.push(box);
+
+                    })
+                    socket.on('posJoueur', function(pos) {
+                        //recuperer le nom du joueur
+                        var nomJoueur = pos.split('pos:')[0].trim();
+                        //recuperer la position du joueur
+                        var pos = pos.split('pos:')[1];
+                        //décomposer la position
+                        var x=pos.split(':')[1].trim().split('Y')[0];
+                        var y=pos.split(':')[2].trim().split('2')[0];
+                        var z=pos.split(':')[3].trim().split('}')[0];
+                        //retrouver le bon joueur parmit la liste
+
+                        for(var i=0, l=joueurs.length;i<l;i++ ){
+                            if(joueurs[i].id==nomJoueur){
+                                //actualiser la position de la boite
+                                joueurs[i].position = new BABYLON.Vector3(x,y,z);
+
+                            }
+                        }
+
+
+
+                    })
+                    socket.on('disconect', function(nomJoueur) {
+                        for(var i=0, l=joueurs.length;i<l;i++ ){
+                            if(joueurs[i].id==nomJoueur){
+                                //suppression du joueur
+                                joueurs.splice(i);
+
+                            }
+                        }
+                    })
+                    var toRemove = [];
+                    for (var i = 0, l = bullets.length; i < l; i++) {
+                        if (bullets[i].update()) {
+                            toRemove.push(i);
+                            bullets[i].dispose();
+                        }
+                    }
+
+                    for (var i = 0, l = toRemove.length; i < l; i++) {
+                        bullets.splice(toRemove[i], 1);
+                    }
+
+                    scene.render();
+                });
+            }
+
+            var Bullet = function (camera, scene) {
+                // 1. Création du mesh et du material de la munition
+                var mesh = BABYLON.Mesh.CreateSphere("bullet", 1, 1, scene);
+                mesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+                mesh.material = new BABYLON.StandardMaterial("bMat", scene);
+                mesh.material.diffuseColor = new BABYLON.Color3(1, 0, 0);
+                mesh.position = camera.position.clone();
+
+                // 2. On determine la direction
+                var direction = getForwardVector(camera.rotation);
+                direction.normalize();
+
+                // 3. Il est vivant ! (pour le moment)
+                var alive = true;
+                var lifeTimer = null;
+
+                var internalDispose = function () {
+                    if (alive) {
+                        if (lifeTimer) {
+                            clearTimeout(lifeTimer);
+                        }
+
+                        mesh.dispose();
+                        lifeTimer = null;
+                        alive = false;
+                    } 
+                };
+
+                // 4. Au bout de 1.5 secondes on supprime le projectil de la scène.
+                lifeTimer = setTimeout(function() {
+                    internalDispose();
+                }, 1500);
+
+                // La vitesse est publique, on peut la modifier facilement
+                this.speed = 0.5;
+
+                // 5. Logique de mise à jour
+                this.update = function () {
+                    if (!alive) {
+                        return false;
+                    }
+                    // On incrémente la position avec la direction et la vitesse désirée.
+                    mesh.position.x += direction.x * this.speed;
+                    mesh.position.y += direction.y * this.speed;
+                    mesh.position.z += direction.z * this.speed;
+
+                    // On test les collision manuellement. Si on tombe sur un objet ayant un tag
+                    // Alors on le supprime
+                    var meshToRemove = null;
+                    var i = 0;
+                    var size = scene.meshes.length;
+                    var hit = false;
+
+                    while (i < size && !hit) {
+                        if (scene.meshes[i].tag && mesh.intersectsMesh(scene.meshes[i], false)) {
+                            meshToRemove = scene.meshes[i];
+                        }
+                        i++;
+                    }
+
+                    if (meshToRemove) {
+                        meshToRemove.dispose();
+                        return true;
+                    }
+
+                    return false;
+                };
+
+                this.dispose = function () {
+                    internalDispose();
+                };
+            };
+            var bullets = [];
+            function createSkybox(scene) {
+                // Création d'une material
+                var sMaterial = new BABYLON.StandardMaterial("skyboxMaterial", scene);
+                sMaterial.backFaceCulling = false;
+                sMaterial.reflectionTexture = new BABYLON.CubeTexture("textures/skybox/skybox", scene);
+                sMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+
+                // Création d'un cube avec la material adaptée
+                var skybox = BABYLON.Mesh.CreateBox("skybox", 250, scene);
+                skybox.infiniteDistance = true;
+                skybox.material = sMaterial;
+            }
+            function createDemoScene(scene) {
+                // Création d'un sol
+                var ground = BABYLON.Mesh.CreatePlane("ground", 150, scene);
+                ground.rotation.x = Math.PI / 2;
+                ground.material = new BABYLON.StandardMaterial("gMaterial", scene);
+                ground.material.diffuseTexture = new BABYLON.Texture("textures/ground.png", scene);
+                ground.checkCollisions = true;
+
+                // Et quelques cubes...
+                var boxMaterial = new BABYLON.StandardMaterial("bMaterial", scene);
+                boxMaterial.diffuseTexture = new BABYLON.Texture("textures/crate.png", scene);
+
+                var cubeSize = 2.5;
+
+                /*for (var i = 0; i < 150; i++) {
+                    var box = BABYLON.Mesh.CreateBox("box1", cubeSize, scene);
+                    box.tag = "enemy";
+                    box.position = new BABYLON.Vector3(random(0, 50),random(1, 50), random(0, 50));
+                    box.material = boxMaterial;
+                    box.checkCollisions = true;
+                }*/
+            }
+            function createPlayer(scene, camera) {
+                var weapon = BABYLON.Mesh.CreateBox("weapon", 1, scene);
+                weapon.scaling = new BABYLON.Vector3(0.2, 0.2, 0.5);
+                weapon.material = new BABYLON.StandardMaterial("wMaterial", scene);
+                weapon.material.diffuseTexture = new BABYLON.Texture("textures/gun.png", scene);
+                weapon.position.x = 0.4;
+                weapon.position.y = -0.3;;
+                weapon.position.z = 1;;
+                weapon.parent = camera;
+            }
+            var cameraJump = function(scene, camera) {
+                var cam = camera;
+
+                cam.animations = [];
+
+                var a = new BABYLON.Animation(
+                    "a",
+                    "position.y", 20,
+                    BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+                    BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+
+                // Animation keys
+                var keys = [];
+                keys.push({ frame: 0, value: cam.position.y });
+                keys.push({ frame: 10, value: cam.position.y + 8 });
+                keys.push({ frame: 20, value: cam.position.y });
+                a.setKeys(keys);
+                var easingFunction = new BABYLON.CircleEase();
+                easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
+                a.setEasingFunction(easingFunction);
+                cam.animations.push(a);
+                scene.beginAnimation(cam, 0, 20, false);
+            } 
+            function random(min, max) {
+                return (Math.random() * (max - min) + min);
+            }
+            function getForwardVector(rotation){
+                var rotationMatrix = BABYLON.Matrix.RotationYawPitchRoll(rotation.y, rotation.x, rotation.z);  
+                var forward = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(0, 0, 1), rotationMatrix);
+                return forward;
+            }
+            runDemo("renderCanvas");
+        </script>
+
+    </body>
+</html>
