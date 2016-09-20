@@ -105,19 +105,48 @@
                     bullets.push(bullet);
                 });
                 var joueurs=[];
+                var pseudos=[];
                 socket.on('connexion', function(joueur) {
                     alert(joueur+' viens de se connecter');
+                    //etape1
+                    socket.emit('replyPseudo', pseudo);
                     // on cré le corps du nouveau joueur
-                    alert('scene : '+scene);
                     try{
                         var box = BABYLON.Mesh.CreateBox(joueur, 6.0, scene);
                     }
                     catch(e){
                         alert(e);
                     }
-                    box.position = new BABYLON.Vector3(random(0, 50),random(1, 50), random(0, 50));
+                    box.position = new BABYLON.Vector3(1,1,1);
                     // on ajoute le joueur a notre tableau de joueurs
                     joueurs.push(box);
+                    pseudos.push(pseudo);
+                })
+                //3e etape en construction
+                socket.on('broadcastPseudo', function(p) {
+                    // on cré le corps du nouveau joueur
+                    //alert('fonction broadcastPseudo recue');
+                    var testPseudo=false;
+                    for(var i=0; i<pseudos.length;i++){
+                        if(pseudos[i]==p){
+                            testPseudo=true;
+                        }
+                    }
+                    if(!testPseudo){
+                        try{
+                            var box = BABYLON.Mesh.CreateBox(p, 6.0, scene);
+                            alert('LE JOUEUR PRECEDENT A BIEN ETE CREE');
+                        }
+                        catch(e){
+                            alert(e);
+                        }
+                        box.position = new BABYLON.Vector3(1,1,1);
+                        // on ajoute le joueur a notre tableau de joueurs
+                        joueurs.push(box);
+                        pseudos.push(pseudo);
+                    }
+                    //code complet a tester plus en detail
+
                 })
                 socket.on('posJoueur', function(pos) {
                     var nomJoueur = pos.split('pos:')[0].trim();

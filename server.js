@@ -40,6 +40,11 @@ io.sockets.on('connection', function (socket, pseudo) {
         // On récupère le pseudo de celui qui a cliqué dans les variables de session
         console.log(socket.pseudo + ' me parle ! Il me dit : ' + message);
     }); 
+    socket.on('replyPseudo', function(p) {
+        //2
+        socket.broadcast.emit('broadcastPseudo',p);
+    }); 
+    
     socket.on('disconnect', function () {
         socket.broadcast.emit('disconect',socket.pseudo);
 
