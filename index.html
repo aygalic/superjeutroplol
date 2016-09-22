@@ -56,7 +56,7 @@
 
                 // Création de la scène
                 var scene = new BABYLON.Scene(engine);
-                scene.gravity = new BABYLON.Vector3(0, -9.81, 0);
+                scene.gravity = new BABYLON.Vector3(0, -2.81, 0);
                 scene.collisionsEnabled = true;
 
                 // Ajout d'une caméra et de son contrôleur
@@ -78,6 +78,14 @@
                 light.diffuse = new BABYLON.Color3(1, 1, 1);
                 light.specular = new BABYLON.Color3(0.6, 0.6, 0.6);
                 light.intensity = 2.5;
+                var light2 = new BABYLON.PointLight("DirLight", new BABYLON.Vector3(10, 0, 0), scene);
+                light2.diffuse = new BABYLON.Color3(1, 1, 1);
+                light2.specular = new BABYLON.Color3(0.6, 0.6, 0.6);
+                light2.intensity = 2.5;
+                var light3 = new BABYLON.PointLight("DirLight", new BABYLON.Vector3(-10, 0, 0), scene);
+                light3.diffuse = new BABYLON.Color3(1, 1, 1);
+                light3.specular = new BABYLON.Color3(0.6, 0.6, 0.6);
+                light3.intensity = 2.5;
 
 
                 //document.addEventListener("contextmenu", function (e) { e.preventDefault();	});
@@ -111,16 +119,12 @@
                     //etape1
                     socket.emit('replyPseudo', pseudo);
                     // on cré le corps du nouveau joueur
-                    try{
-                        var box = BABYLON.Mesh.CreateBox(joueur, 6.0, scene);
-                    }
-                    catch(e){
-                        alert(e);
-                    }
-                    box.position = new BABYLON.Vector3(1,1,1);
+                    var player = BABYLON.Mesh.CreateBox(joueur, 1.0, scene);//lala
+
+                    player.position = new BABYLON.Vector3(1,1,1);
                     // on ajoute le joueur a notre tableau de joueurs
-                    joueurs.push(box);
-                    pseudos.push(pseudo);
+                    joueurs.push(player);
+                    pseudos.push(joueur);
                 })
                 //3e etape en construction
                 socket.on('broadcastPseudo', function(p) {
@@ -133,19 +137,13 @@
                         }
                     }
                     if(!testPseudo){
-                        try{
-                            var box = BABYLON.Mesh.CreateBox(p, 6.0, scene);
-                            alert('LE JOUEUR PRECEDENT A BIEN ETE CREE');
-                        }
-                        catch(e){
-                            alert(e);
-                        }
-                        box.position = new BABYLON.Vector3(1,1,1);
+                        var player = BABYLON.Mesh.CreateBox(p, 1.0, scene);//lala
+
+                        player.position = new BABYLON.Vector3(1,1,1);
                         // on ajoute le joueur a notre tableau de joueurs
-                        joueurs.push(box);
-                        pseudos.push(pseudo);
+                        joueurs.push(player);
+                        pseudos.push(p);
                     }
-                    //code complet a tester plus en detail
 
                 })
                 socket.on('posJoueur', function(pos) {
@@ -166,9 +164,8 @@
                         }
 
                     }
-                    if(test=1){
+                    if(test==1){
                         socket.emit('message', 'impossible dacctualiser la position');
-
                     }
 
                 })
@@ -289,41 +286,38 @@
                 sMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
 
                 // Création d'un cube avec la material adaptée
-                var skybox = BABYLON.Mesh.CreateBox("skybox", 250, scene);
+                var skybox = BABYLON.Mesh.CreateBox("skybox", 2500, scene);
                 skybox.infiniteDistance = true;
                 skybox.material = sMaterial;
             }
             function createDemoScene(scene) {
                 // Création d'un sol
-                var ground = BABYLON.Mesh.CreatePlane("ground", 150, scene);
-                ground.rotation.x = Math.PI / 2;
-                ground.material = new BABYLON.StandardMaterial("gMaterial", scene);
-                ground.material.diffuseTexture = new BABYLON.Texture("textures/ground.png", scene);
-                ground.checkCollisions = true;
-
-                // Et quelques cubes...
-                var boxMaterial = new BABYLON.StandardMaterial("bMaterial", scene);
-                boxMaterial.diffuseTexture = new BABYLON.Texture("textures/crate.png", scene);
-
-                var cubeSize = 2.5;
-
-                /*for (var i = 0; i < 150; i++) {
-                    var box = BABYLON.Mesh.CreateBox("box1", cubeSize, scene);
-                    box.tag = "enemy";
-                    box.position = new BABYLON.Vector3(random(0, 50),random(1, 50), random(0, 50));
-                    box.material = boxMaterial;
-                    box.checkCollisions = true;
-                }*/
+                var material1 = new BABYLON.StandardMaterial("texture1", scene);
+                material1.diffuseColor = new BABYLON.Color3(1.0, 0.2, 0.7);
+                BABYLON.SceneLoader.ImportMesh("", "models/", "map.babylon", scene, function (newMeshes) {
+                    // Set the target of the camera to the first imported mesh
+                    for(var i=0; i<newMeshes.length;i++){
+                        newMeshes[i].material = new BABYLON.StandardMaterial("gMaterial", scene);
+                        newMeshes[i].checkCollisions = true;
+                        newMeshes[i].material = material1;
+                    }
+                });
             }
             function createPlayer(scene, camera) {
-                var weapon = BABYLON.Mesh.CreateBox("weapon", 1, scene);
-                weapon.scaling = new BABYLON.Vector3(0.2, 0.2, 0.5);
-                weapon.material = new BABYLON.StandardMaterial("wMaterial", scene);
-                weapon.material.diffuseTexture = new BABYLON.Texture("textures/gun.png", scene);
-                weapon.position.x = 0.4;
-                weapon.position.y = -0.3;;
-                weapon.position.z = 1;;
-                weapon.parent = camera;
+
+                BABYLON.SceneLoader.ImportMesh("", "models/", "ak-47.babylon", scene, function (newMeshes) {
+                    // Set the target of the camera to the first imported mesh
+                    for(var i=0; i<newMeshes.length;i++){
+                        //newMeshes[i].material = new BABYLON.StandardMaterial("shoe", scene);
+                        //newMeshes[0].parent = camera;
+                        newMeshes[i].position.x = 1;
+                        newMeshes[i].position.y = -0.7;;
+                        newMeshes[i].position.z = 2
+                        newMeshes[i].parent = camera;
+                        newMeshes[i].scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+                    }
+                });
+
             }
             var cameraJump = function(scene, camera) {
                 var cam = camera;
@@ -338,9 +332,10 @@
 
                 // Animation keys
                 var keys = [];
+                var temp = cam.position.y;
                 keys.push({ frame: 0, value: cam.position.y });
-                keys.push({ frame: 10, value: cam.position.y + 8 });
-                keys.push({ frame: 20, value: cam.position.y });
+                keys.push({ frame: 20, value: cam.position.y + 20 });
+                keys.push({ frame: 60, value: temp });
                 a.setKeys(keys);
                 var easingFunction = new BABYLON.CircleEase();
                 easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
