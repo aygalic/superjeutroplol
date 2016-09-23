@@ -62,8 +62,8 @@
                 // Ajout d'une caméra et de son contrôleur
                 var camera = new BABYLON.FreeCamera("MainCamera", new BABYLON.Vector3(0, 2.5, 5), scene);
                 camera.applyGravity = true;
+                camera.ellipsoid = new BABYLON.Vector3(1, 1, 1);
                 camera.checkCollisions = true;
-
                 camera.speed = 0.5;
                 camera.angularSensibility = 1000;
 
@@ -195,12 +195,17 @@
 
 
 
+
+
+
                     var toRemove = [];
                     for (var i = 0, l = bullets.length; i < l; i++) {
                         if (bullets[i].update()) {
                             toRemove.push(i);
                             bullets[i].dispose();
                         }
+                        //check colision
+
                     }
 
                     for (var i = 0, l = toRemove.length; i < l; i++) {
@@ -245,7 +250,7 @@
                 // 4. Au bout de 1.5 secondes on supprime le projectil de la scène.
                 lifeTimer = setTimeout(function() {
                     internalDispose();
-                }, 15000);
+                }, 5000);
 
                 // La vitesse est publique, on peut la modifier facilement
                 this.speed = 5;
@@ -316,6 +321,9 @@
                 }
                 //jusque la tout va bien
 
+
+
+
                 // 3. Il est vivant ! (pour le moment)
                 var alive = true;
                 var lifeTimer = null;
@@ -335,7 +343,7 @@
                 // 4. Au bout de 1.5 secondes on supprime le projectil de la scène.
                 lifeTimer = setTimeout(function() {
                     internalDispose();
-                }, 15000);
+                }, 5000);
 
                 // La vitesse est publique, on peut la modifier facilement
                 this.speed = 5;
@@ -351,7 +359,7 @@
                         mesh.position.x += direction.x * this.speed;
                         mesh.position.y += direction.y * this.speed;
                         mesh.position.z += direction.z * this.speed;
-                        
+
                     }
                     catch (e) {
                         alert(e); 
@@ -375,7 +383,8 @@
                     }
 
                     if (meshToRemove) {
-                        meshToRemove.dispose();
+                        alert('T mor dan lgame frr');
+                        //meshToRemove.dispose();
                         return true;
                     }
 
@@ -413,7 +422,13 @@
                 });
             }
             function createPlayer(scene, camera) {
-
+                var hitbox = BABYLON.Mesh.CreateBox("", 3.0, scene);//lala
+                hitbox.parent=camera;
+                hitbox.checkCollisions = true;
+                var materialAlpha = new BABYLON.StandardMaterial("texture1", scene);
+                hitbox.material =materialAlpha;
+                materialAlpha.alpha = 0;
+                hitbox.tag="hitbox";
                 BABYLON.SceneLoader.ImportMesh("", "models/", "ak-47.babylon", scene, function (newMeshes) {
                     // Set the target of the camera to the first imported mesh
                     for(var i=0; i<newMeshes.length;i++){
