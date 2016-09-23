@@ -3,7 +3,7 @@ var fs = require('fs');
 var express         = require('express');
 var app             = express();
 var    verbose         = false;
-  var  server          = http.createServer(app);
+var  server          = http.createServer(app);
 
 
 
@@ -67,6 +67,11 @@ io.sockets.on('connection', function (socket, pseudo) {
         socket.broadcast.emit('broadcastPseudo',p);
     }); 
 
+    socket.on('bulletFire', function(b) {
+        console.log('bullets fired'+b);
+
+        socket.broadcast.emit('broadcastBulletFire',b);
+    }); 
     socket.on('disconnect', function () {
         socket.broadcast.emit('disconect',socket.pseudo);
 

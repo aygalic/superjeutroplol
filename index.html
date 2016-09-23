@@ -56,7 +56,7 @@
 
                 // Création de la scène
                 var scene = new BABYLON.Scene(engine);
-                scene.gravity = new BABYLON.Vector3(0, -2.81, 0);
+                scene.gravity = new BABYLON.Vector3(0, -1, 0);
                 scene.collisionsEnabled = true;
 
                 // Ajout d'une caméra et de son contrôleur
@@ -74,18 +74,11 @@
                 scene.activeCamera.attachControl(canvas);
 
                 // Ajout d'une lumière
-                var light = new BABYLON.PointLight("DirLight", new BABYLON.Vector3(0, 10, 0), scene);
-                light.diffuse = new BABYLON.Color3(1, 1, 1);
-                light.specular = new BABYLON.Color3(0.6, 0.6, 0.6);
-                light.intensity = 2.5;
-                var light2 = new BABYLON.PointLight("DirLight", new BABYLON.Vector3(10, 0, 0), scene);
-                light2.diffuse = new BABYLON.Color3(1, 1, 1);
-                light2.specular = new BABYLON.Color3(0.6, 0.6, 0.6);
-                light2.intensity = 2.5;
-                var light3 = new BABYLON.PointLight("DirLight", new BABYLON.Vector3(-10, 0, 0), scene);
-                light3.diffuse = new BABYLON.Color3(1, 1, 1);
-                light3.specular = new BABYLON.Color3(0.6, 0.6, 0.6);
-                light3.intensity = 2.5;
+                var light0 = new BABYLON.HemisphericLight("Hemi0", new BABYLON.Vector3(0, 1, 0), scene);
+                light0.diffuse = new BABYLON.Color3(1, 1, 1);
+                light0.specular = new BABYLON.Color3(1, 1, 1);
+                light0.groundColor = new BABYLON.Color3(0, 0, 0);
+
 
 
                 //document.addEventListener("contextmenu", function (e) { e.preventDefault();	});
@@ -112,6 +105,16 @@
                     var bullet = new Bullet(camera, scene);
                     bullets.push(bullet);
                 });
+                socket.on('broadcastBulletFire', function(b) {
+                    var posbullet= b.split(";")[1]
+                    var dirbullet= b.split(";")[0]
+                    var bullet = new EnemyBullet(posbullet, dirbullet, scene);
+                    bullets.push(bullet);
+
+                })
+
+
+
                 var joueurs=[];
                 var pseudos=[];
                 socket.on('connexion', function(joueur) {
@@ -152,7 +155,7 @@
                     var pos = pos.split('pos:')[1];
                     //décomposer la position
                     var x=pos.split(':')[1].trim().split('Y')[0];
-                    var y=pos.split(':')[2].trim().split('2')[0];
+                    var y=pos.split(':')[2].trim().split('Z')[0];
                     var z=pos.split(':')[3].trim().split('}')[0];
                     //retrouver le bon joueur parmit la liste
                     var test=1;
@@ -169,6 +172,18 @@
                     }
 
                 })
+
+
+                socket.on('disconect', function(nomJoueur) {
+                    for(var i=0, l=joueurs.length;i<l;i++ ){
+                        if(joueurs[i].id==nomJoueur){
+                            //suppression du joueur
+                            joueurs.splice(i);
+
+                        }
+                    }
+                    alert('un joueur viens de se deconnecter');
+                })
                 var posjoueur;
                 // Lancement de la boucle principale
                 engine.runRenderLoop(function() {
@@ -179,16 +194,7 @@
                     }
 
 
-                    socket.on('disconect', function(nomJoueur) {
-                        for(var i=0, l=joueurs.length;i<l;i++ ){
-                            if(joueurs[i].id==nomJoueur){
-                                //suppression du joueur
-                                joueurs.splice(i);
 
-                            }
-                        }
-                        alert('un joueur viens de se deconnecter');
-                    })
                     var toRemove = [];
                     for (var i = 0, l = bullets.length; i < l; i++) {
                         if (bullets[i].update()) {
@@ -205,17 +211,20 @@
                 });
             }
 
+
+
             var Bullet = function (camera, scene) {
                 // 1. Création du mesh et du material de la munition
                 var mesh = BABYLON.Mesh.CreateSphere("bullet", 1, 1, scene);
-                mesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+                //mesh.scaling = new BABYLON.Vector3(11, 11, 11);
                 mesh.material = new BABYLON.StandardMaterial("bMat", scene);
                 mesh.material.diffuseColor = new BABYLON.Color3(1, 0, 0);
                 mesh.position = camera.position.clone();
-
+                var posbulet = camera.position.clone();
                 // 2. On determine la direction
                 var direction = getForwardVector(camera.rotation);
                 direction.normalize();
+                socket.emit('bulletFire', direction+";"+posbulet);
 
                 // 3. Il est vivant ! (pour le moment)
                 var alive = true;
@@ -236,10 +245,10 @@
                 // 4. Au bout de 1.5 secondes on supprime le projectil de la scène.
                 lifeTimer = setTimeout(function() {
                     internalDispose();
-                }, 1500);
+                }, 15000);
 
                 // La vitesse est publique, on peut la modifier facilement
-                this.speed = 0.5;
+                this.speed = 5;
 
                 // 5. Logique de mise à jour
                 this.update = function () {
@@ -251,6 +260,106 @@
                     mesh.position.y += direction.y * this.speed;
                     mesh.position.z += direction.z * this.speed;
 
+                    // On test les collision manuellement. Si on tombe sur un objet ayant un tag
+                    // Alors on le supprime
+                    var meshToRemove = null;
+                    var i = 0;
+                    var size = scene.meshes.length;
+                    var hit = false;
+
+                    while (i < size && !hit) {
+                        if (scene.meshes[i].tag && mesh.intersectsMesh(scene.meshes[i], false)) {
+                            meshToRemove = scene.meshes[i];
+                        }
+                        i++;
+                    }
+
+                    if (meshToRemove) {
+                        meshToRemove.dispose();
+                        return true;
+                    }
+
+                    return false;
+                };
+
+                this.dispose = function () {
+                    internalDispose();
+                };
+            };
+            //var bullet = new EnemyBullet(posbullet, dirbullet, scene);
+            var EnemyBullet = function (posbullet, directionbullet, scene) {
+                // 1. Création du mesh et du material de la munition
+                var mesh = BABYLON.Mesh.CreateSphere("bullet", 1, 1, scene);
+                //mesh.scaling = new BABYLON.Vector3(11, 11, 11);
+                mesh.material = new BABYLON.StandardMaterial("bMat", scene);
+                mesh.material.diffuseColor = new BABYLON.Color3(1, 0, 0);
+                //{X: 0.030269898099089396 Y:-0.07685432487850055 Z:0.9965827341553437};{X: 0 Y:2.010045867914167 Z:12.487163351536122}
+
+                mesh.position.x = Number(posbullet.split(':')[1].trim().split('Y')[0].trim());
+                mesh.position.y = Number(posbullet.split(':')[2].trim().split('Z')[0].trim());
+                mesh.position.z = Number(posbullet.split(':')[3].trim().split('}')[0].trim());
+
+
+
+
+                // 2. On determine la direction
+                try {
+                    var direction = new BABYLON.Vector3(1, 1, 1);
+                    direction.x = Number(directionbullet.split(':')[1].trim().split('Y')[0].trim());
+                    direction.y = Number(directionbullet.split(':')[2].trim().split('Z')[0].trim());
+                    direction.z = Number(directionbullet.split(':')[3].trim().split('}')[0].trim());
+                    direction.normalize();
+
+                }
+                catch (e) {
+                    alert(e); 
+                }
+                //jusque la tout va bien
+
+                // 3. Il est vivant ! (pour le moment)
+                var alive = true;
+                var lifeTimer = null;
+
+                var internalDispose = function () {
+                    if (alive) {
+                        if (lifeTimer) {
+                            clearTimeout(lifeTimer);
+                        }
+
+                        mesh.dispose();
+                        lifeTimer = null;
+                        alive = false;
+                    } 
+                };
+
+                // 4. Au bout de 1.5 secondes on supprime le projectil de la scène.
+                lifeTimer = setTimeout(function() {
+                    internalDispose();
+                }, 15000);
+
+                // La vitesse est publique, on peut la modifier facilement
+                this.speed = 5;
+
+                // 5. Logique de mise à jour
+                this.update = function () {
+                    if (!alive) {
+                        return false;
+                    }
+                    // On incrémente la position avec la direction et la vitesse désirée.
+
+                    try {
+                        mesh.position.x += direction.x * this.speed;
+                        mesh.position.y += direction.y * this.speed;
+                        mesh.position.z += direction.z * this.speed;
+                        
+                    }
+                    catch (e) {
+                        alert(e); 
+                    }
+
+
+
+                    //alert(mesh.position);
                     // On test les collision manuellement. Si on tombe sur un objet ayant un tag
                     // Alors on le supprime
                     var meshToRemove = null;
@@ -332,12 +441,11 @@
 
                 // Animation keys
                 var keys = [];
-                var temp = cam.position.y;
                 keys.push({ frame: 0, value: cam.position.y });
-                keys.push({ frame: 20, value: cam.position.y + 20 });
-                keys.push({ frame: 60, value: temp });
+                keys.push({ frame: 20, value: cam.position.y + 10 });
+                keys.push({ frame: 40, value: cam.position.y-10 });
                 a.setKeys(keys);
-                var easingFunction = new BABYLON.CircleEase();
+                var easingFunction = new BABYLON.QuarticEase();
                 easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
                 a.setEasingFunction(easingFunction);
                 cam.animations.push(a);
