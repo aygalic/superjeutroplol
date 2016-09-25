@@ -7,6 +7,8 @@ var  server          = http.createServer(app);
 
 
 
+     
+
 app.get( '/', function( req, res ){
     console.log('trying to load %s', __dirname + '/index.html');
     res.sendFile( '/index.html' , { root:__dirname });
@@ -80,4 +82,4 @@ io.sockets.on('connection', function (socket, pseudo) {
 
 
 
-server.listen(8080);
+server.listen(80);
