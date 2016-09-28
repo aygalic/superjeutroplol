@@ -36,8 +36,8 @@
         <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
         <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
         <script>
-            var socket = io.connect('http://localhost:80');
-
+            //var socket = io.connect('http://localhost:80');
+            var socket = io.connect('http://192.168.43.209:80');
             // On demande le pseudo au visiteur...
             var pseudo = prompt('Quel est votre pseudo ?');
             // Et on l'envoie avec le signal "petit_nouveau" (pour le différencier de "message")

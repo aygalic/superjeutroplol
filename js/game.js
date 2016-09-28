@@ -8,7 +8,7 @@ function runDemo(canvasId) {
     // Ajout d'une caméra et de son contrôleur
     var camera = new BABYLON.FreeCamera("MainCamera", new BABYLON.Vector3(0, 2.5, 5), scene);
     camera.applyGravity = true;
-    camera.ellipsoid = new BABYLON.Vector3(1, 2, 1);
+    camera.ellipsoid = new BABYLON.Vector3(1, 2.5, 1);
     camera.checkCollisions = true;
     camera.speed = 0.5;
     camera.position.y +=5;
@@ -79,13 +79,29 @@ function runDemo(canvasId) {
         }
     }
     var bullets = [];
-    canvas.addEventListener("mouseup", function (e) {
+    var autoFire = setInterval(fire, 100);
+    clearInterval(autoFire);
+    function fire()
+    {
         var dirbullet = getForwardVector(camera.rotation);
         var posbullet = camera.position.clone();
         socket.emit('bulletFire', dirbullet+";"+posbullet+";"+pseudo);
         var bullet = new EnemyBullet(posbullet, dirbullet, scene, pseudo);
         bullets.push(bullet);
+        
+    }
+    canvas.addEventListener("mousedown", function (e) {
+        autoFire = setInterval(fire, 100);
     });
+    canvas.addEventListener("mouseup", function (e) {
+        clearInterval(autoFire);
+    });
+
+
+
+
+
+
     socket.on('broadcastBulletFire', function(b) {
         var posbullet= b.split(";")[1];
         var dirbullet= b.split(";")[0];
@@ -339,8 +355,8 @@ function createPlayer(scene, camera) {
         for(var i=0; i<newMeshes.length;i++){
             //newMeshes[i].material = new BABYLON.StandardMaterial("shoe", scene);
             newMeshes[i].position.x = 1;
-            newMeshes[i].position.y = -0.7;;
-            newMeshes[i].position.z = 2
+            newMeshes[i].position.y = -0.7;
+            newMeshes[i].position.z = 2;
             newMeshes[i].parent = camera;
             newMeshes[i].scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
         }
