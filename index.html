@@ -3,45 +3,47 @@
     <head>
         <meta charset="utf-8" />
         <title>Woa tro lol</title>
-        <style>
-            body, html {
-                margin: 0;
-                padding: 0;
-                overflow: hidden;
-                width: 100%;
-                height: 100%;
-            }
-            canvas {
-                width: 100%;
-                height: 100%;
-                touch-action: none;
-                
-            }
-
-            #crosshair {
-                position: absolute;
-                left: 50%;
-                top: 50%;
-                width: 5px;
-                height: 5px;
-                z-index: 999;
-                background-color: white;
-            }
-
-        </style>
+        <link rel="stylesheet" type="text/css" href="css/style.css">
     </head>
     <body>
-        <span id="crosshair"></span>
-        <canvas id="renderCanvas"></canvas>
+        <div class="acceuil">
+            <div class="row">
+                <div class="popup">
+
+
+                    <input type="text" class="form-control form-pseudo" id="pseudo" placeholder="Pseudo">
+                    <button class="btn btn-outline-primary btn-pseudo" id="btnPseudo" type="button">Go!</button>
+
+                </div>
+            </div>
+        </div>
+        <div class="game">
+            <span id="crosshair1"></span>
+            <span id="crosshair2"></span>
+            <span id="amo">?/30</span>
+            <canvas id="renderCanvas"></canvas>
+        </div>
+        <!-- Latest compiled and minified BOOTSTRAP CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/css/bootstrap.min.css" integrity="sha384-2hfp1SzUoho7/TsGGGDaFdsuuDL0LX2hnUp6VkX3CUQ2K4K+xjboZdsXyp4oUHZj" crossorigin="anonymous">
+
+        <!-- Latest compiled and minified BOOTSTRAP JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/js/bootstrap.min.js" integrity="sha384-VjEeINv9OSwtWFLAtmc4JCtEJXXBub00gtSnszmspDLCtC0I4z4nqz7rEFbIZLLU" crossorigin="anonymous"></script>
         <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
         <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+
+        <script type="text/javascript">
+            var socket = io.connect('http://localhost:80');
+            $(document).ready(function(){
+                $('#btnPseudo').click(function() {
+                    var pseudo=$('#pseudo').val();
+                    //var socket = io.connect('http://192.168.43.43:80');
+                    socket.emit('petit_nouveau', pseudo);
+                    $(".acceuil").hide();
+                });
+            });
+
+        </script>
         <script>
-            //var socket = io.connect('http://localhost:80');
-            var socket = io.connect('http://192.168.43.209:80');
-            // On demande le pseudo au visiteur...
-            var pseudo = prompt('Quel est votre pseudo ?');
-            // Et on l'envoie avec le signal "petit_nouveau" (pour le différencier de "message")
-            socket.emit('petit_nouveau', pseudo);
 
             // On affiche une boîte de dialogue quand le serveur nous envoie un "message"
             socket.on('message', function(message) {

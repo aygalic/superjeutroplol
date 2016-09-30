@@ -48,7 +48,7 @@ function runDemo(canvasId) {
     }, false);
 
 
-
+    
 
 
     // Ajout d'une lumière
@@ -78,20 +78,39 @@ function runDemo(canvasId) {
                 break;
         }
     }
+    //gestion du changement d'arme
+    var actualWeapon=1;
+    scene.actionManager = new BABYLON.ActionManager(scene);
+    scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, function (evt) {
+        //alert(evt.sourceEvent.key);
+        if (evt.sourceEvent.key == "Shift") {
+            if(actualWeapon==2){
+                rangerArme(scene, hand, camera,0);
+                actualWeapon=1;
+                sortirArme(scene, weapon, camera,-0.7);
+            }
+            else if(actualWeapon==1){
+                rangerArme(scene, weapon, camera,-0.7);
+                actualWeapon=2;
+                sortirArme(scene, hand, camera,0);
+            }
+        }
+    }));
+
     var bullets = [];
-    var autoFire = setInterval(fire, 100);
+    var autoFire = setInterval(fire, 0);
     clearInterval(autoFire);
     function fire()
     {
         var dirbullet = getForwardVector(camera.rotation);
         var posbullet = camera.position.clone();
         socket.emit('bulletFire', dirbullet+";"+posbullet+";"+pseudo);
+        fireAnimation(scene, weapon, camera);
         var bullet = new EnemyBullet(posbullet, dirbullet, scene, pseudo);
         bullets.push(bullet);
-        
     }
     canvas.addEventListener("mousedown", function (e) {
-        autoFire = setInterval(fire, 100);
+        autoFire = setInterval(fire, 150);
     });
     canvas.addEventListener("mouseup", function (e) {
         clearInterval(autoFire);
@@ -341,8 +360,12 @@ function createDemoScene(scene) {
             newMeshes[i].checkCollisions = true;
             newMeshes[i].material = material1;
         }
+
     });
+
 }
+var weapon;
+var hand;
 function createPlayer(scene, camera) {
     var hitbox = BABYLON.Mesh.CreateBox("", 3.0, scene);//lala
     hitbox.parent=camera;
@@ -351,23 +374,34 @@ function createPlayer(scene, camera) {
     materialAlpha.alpha = 0;
     hitbox.tag="hitbox";
     BABYLON.SceneLoader.ImportMesh("", "../models/", "ak-47.babylon", scene, function (newMeshes) {
-        // Set the target of the camera to the first imported mesh
-        for(var i=0; i<newMeshes.length;i++){
-            //newMeshes[i].material = new BABYLON.StandardMaterial("shoe", scene);
-            newMeshes[i].position.x = 1;
-            newMeshes[i].position.y = -0.7;
-            newMeshes[i].position.z = 2;
-            newMeshes[i].parent = camera;
-            newMeshes[i].scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
-        }
+        //merge meshes
+        var newMesh = BABYLON.Mesh.MergeMeshes(newMeshes, true, true);
+        //attach weapon to camera
+        newMesh.parent=camera;
+        newMesh.position.x = 1;
+        newMesh.position.y = -0.7;
+        newMesh.position.z = 2;
+        newMesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+        weapon=newMesh;
+    });
+    BABYLON.SceneLoader.ImportMesh("", "../models/", "hand.babylon", scene, function (newMeshes) {
+        //merge meshes
+        var newMesh = BABYLON.Mesh.MergeMeshes(newMeshes, true, true);
+        //attach weapon to camera
+        newMesh.parent=camera;
+
+        newMesh.position.x = -2;
+        newMesh.position.y = -5 /*NORMALEMENT 0*/;
+        newMesh.position.z = 3;
+        newMesh.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
+        newMesh.checkCollisions=true;
+        hand=newMesh;
     });
 
 }
 var cameraJump = function(scene, camera) {
     var cam = camera;
-
     cam.animations = [];
-
     var a = new BABYLON.Animation(
         "a",
         "position.y", 20,
@@ -386,6 +420,77 @@ var cameraJump = function(scene, camera) {
     cam.animations.push(a);
     scene.beginAnimation(cam, 0, 20, false);
 } 
+var fireAnimation = function(scene, weapon, camera) {
+    var cam = camera;
+    weapon.animations = [];
+
+    var b = new BABYLON.Animation(
+        "b",
+        "position.z", 20,
+        BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+        BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+
+    // Animation keys
+    var keys = [];
+    keys.push({ frame: 0, value: cam.position.z - cam.position.z+2});
+    keys.push({ frame: 2, value: cam.position.z - cam.position.z+1.9});
+    keys.push({ frame: 4, value: cam.position.z - cam.position.z+2});
+
+    b.setKeys(keys);
+    var easingFunction = new BABYLON.QuarticEase();
+    easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
+    b.setEasingFunction(easingFunction);
+    weapon.animations.push(b);
+
+    scene.beginAnimation(weapon, 0, 4, false);
+} 
+var rangerArme = function(scene, weapon, camera, varY) {
+    var cam = camera;
+    weapon.animations = [];
+
+    var b = new BABYLON.Animation(
+        "b",
+        "position.y", 40,
+        BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+        BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+
+    // Animation keys
+    var keys = [];
+    keys.push({ frame: 0, value: cam.position.y - cam.position.y+varY});
+    keys.push({ frame: 50, value: cam.position.y - cam.position.y-5});
+
+    b.setKeys(keys);
+    var easingFunction = new BABYLON.QuarticEase();
+    easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
+    b.setEasingFunction(easingFunction);
+    weapon.animations.push(b);
+
+    scene.beginAnimation(weapon, 0, 50, false);
+} 
+var sortirArme = function(scene, weapon, camera, varY) {
+    var cam = camera;
+    weapon.animations = [];
+
+    var b = new BABYLON.Animation(
+        "b",
+        "position.y", 40,
+        BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+        BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+
+    // Animation keys
+    var keys = [];
+    keys.push({ frame: 0, value: cam.position.y - cam.position.y-5});
+    keys.push({ frame: 50, value: cam.position.y - cam.position.y+varY});
+
+    b.setKeys(keys);
+    var easingFunction = new BABYLON.QuarticEase();
+    easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
+    b.setEasingFunction(easingFunction);
+    weapon.animations.push(b);
+
+    scene.beginAnimation(weapon, 0, 50, false);
+} 
+
 function random(min, max) {
     return (Math.random() * (max - min) + min);
 }

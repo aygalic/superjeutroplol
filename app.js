@@ -41,7 +41,7 @@ io.sockets.on('connection', function (socket, pseudo) {
 
 
     // Quand un client se connecte, on lui envoie un message
-    socket.emit('message', 'Vous êtes bien connecté !');
+    //socket.emit('message', 'Vous êtes bien connecté !');
     // On signale aux autres clients qu'il y a un nouveau venu
 
     // Dès qu'on nous donne un pseudo, on le stocke en variable de session
