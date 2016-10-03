@@ -59,6 +59,12 @@ io.sockets.on('connection', function (socket, pseudo) {
             socket.broadcast.emit('posJoueur',socket.pseudo + ' pos: ' + position);
         }
     });
+    socket.on('rotation', function(rotation) {
+        if(logged){
+            console.log(socket.pseudo + ' rotation : ' + rotation);
+            socket.broadcast.emit('rotJoueur',socket.pseudo + ' rot: ' + rotation);
+        }
+    });
 
     // Dès qu'on reçoit un "message" (clic sur le bouton), on le note dans la console
     socket.on('message', function (message) {
