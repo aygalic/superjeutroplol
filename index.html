@@ -21,7 +21,7 @@
             <span id="amo">?/30</span>
             <canvas id="renderCanvas"></canvas>
         </div>
-        
+
         <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
 
         <!-- Latest compiled and minified BOOTSTRAP CSS -->
@@ -32,14 +32,18 @@
         <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
 
         <script type="text/javascript">
-            //var socket = io.connect('http://192.168.43.209:80');
-            var pseudo="";
+            var pseudo=null;
+            //var socket = io.connect('http://192.168.43.43:80');
             var socket = io.connect('http://localhost:80');
             $(document).ready(function(){
                 $('#btnPseudo').click(function() {
                     pseudo=$('#pseudo').val().toString();
-                    socket.emit('petit_nouveau', pseudo);
-                    $(".acceuil").hide();
+                    if(pseudo!=null){
+                        socket.emit('petit_nouveau', pseudo);
+                        runDemo("renderCanvas");
+                        $(".acceuil").hide();
+
+                    }
                 });
             });
 
@@ -54,6 +58,7 @@
         <script src="http://cdn.babylonjs.com/2-4/babylon.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/handjs/1.3.11/hand.min.js"></script>
+        <script src="js/functions.js"></script>
         <script src="js/game.js"></script>
 
 

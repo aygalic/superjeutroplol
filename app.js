@@ -2,12 +2,12 @@ var http = require('http');
 var fs = require('fs');
 var express         = require('express');
 var app             = express();
-var    verbose         = false;
-var  server          = http.createServer(app);
+var verbose         = false;
+var server          = http.createServer(app);
 
 
 
-     
+
 
 app.get( '/', function( req, res ){
     console.log('trying to load %s', __dirname + '/index.html');
@@ -75,11 +75,17 @@ io.sockets.on('connection', function (socket, pseudo) {
         socket.broadcast.emit('broadcastPseudo',p);
     }); 
 
+
+    //gestion des attaques
     socket.on('bulletFire', function(b) {
         console.log('bullets fired'+b);
-
         socket.broadcast.emit('broadcastBulletFire',b);
     }); 
+    socket.on('handFire', function(b) {
+        console.log('hand fired'+b);
+        socket.broadcast.emit('broadcastHandFire',b);
+    }); 
+    //fin de la gestion de attaques
     socket.on('disconnect', function () {
         socket.broadcast.emit('disconect',socket.pseudo);
 
