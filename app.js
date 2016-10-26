@@ -125,7 +125,6 @@ var world = function(){
             }
         }
     }
-    console.log(this.asString);
 }
 
 function random(min, max) {
