@@ -45,7 +45,8 @@
             var camera;
             $(".actualLife").width(hp + '%');
             $(".userInterface").hide();
-            var socket = io.connect('http://#ip#:8000');
+            var socket = io.connect('http://blockshoter-blockshoter.44fs.preview.openshiftapps.com:8000/', {'forceNew':true });
+            //var socket = io.connect('http://#ip#:8000');
             $(document).ready(function(){
                 $('#btnPseudo').click(function() {
                     pseudo=$('#pseudo').val().toString();

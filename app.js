@@ -8,6 +8,10 @@ var server          = http.createServer(app);
 
 
 var ip = require("ip");
+
+
+
+
 var ipaddress= ip.address() ;
 
 app.engine('ntl', function (filePath, options, callback) { // define the template engine
