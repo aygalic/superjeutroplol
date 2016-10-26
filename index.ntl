@@ -45,7 +45,7 @@
             var camera;
             $(".actualLife").width(hp + '%');
             $(".userInterface").hide();
-            var socket = io.connect('http://#ip#:8080');
+            var socket = io.connect('http://#ip#:8000');
             $(document).ready(function(){
                 $('#btnPseudo').click(function() {
                     pseudo=$('#pseudo').val().toString();

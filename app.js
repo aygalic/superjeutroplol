@@ -117,7 +117,7 @@ io.sockets.on('connection', function (socket, pseudo) {
 
 
 
-server.listen(8080);
+server.listen(8000);
 var world = function(){
     this.height = random(1,2);
     this.width = random(30,40);
