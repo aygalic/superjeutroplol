@@ -6,12 +6,12 @@ function runDemo(canvasId) {
     scene.gravity = new BABYLON.Vector3(0, -1, 0);
     scene.collisionsEnabled = true;
     // Ajout d'une caméra et de son contrôleur
-    var camera = new BABYLON.FreeCamera("MainCamera", new BABYLON.Vector3(0, 2.5, 5), scene);
+    camera = new BABYLON.FreeCamera("MainCamera", new BABYLON.Vector3(0, 2.5, 5), scene);
     camera.applyGravity = true;
     camera.ellipsoid = new BABYLON.Vector3(1, 2.5, 1);
     camera.checkCollisions = true;
-    camera.speed = 0.8;
-    camera.position.y +=5;
+    camera.speed = 2;
+    camera.position.y +=3;
     camera.angularSensibility = 1000;
 
     camera.keysUp = [90]; // Touche Z
@@ -52,16 +52,39 @@ function runDemo(canvasId) {
 
 
     // Ajout d'une lumière
+    
     var light0 = new BABYLON.HemisphericLight("Hemi0", new BABYLON.Vector3(0, 1, 0), scene);
     light0.diffuse = new BABYLON.Color3(1, 1, 1);
     light0.specular = new BABYLON.Color3(1, 1, 1);
     light0.groundColor = new BABYLON.Color3(0, 0, 0);
+    
+    
 
+    
+    /*
+    var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 20, 100), scene);
+    var godrays = new BABYLON.VolumetricLightScatteringPostProcess('godrays', 1, camera, null, 100, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false);
 
+    // By default it uses a billboard to render the sun, just apply the desired texture
+    // position and scale
+    godrays.mesh.material.diffuseTexture = new BABYLON.Texture('textures/sun.png', scene, true, false, BABYLON.Texture.BILINEAR_SAMPLINGMODE);
+    godrays.mesh.material.diffuseTexture.hasAlpha = true;
+    godrays.mesh.position = new BABYLON.Vector3(-150, 150, 150);
+    godrays.mesh.scaling = new BABYLON.Vector3(35, 35, 35);
+
+    light.position = godrays.mesh.position;
+
+    */
 
 
     // Enfin la scène de démo
-    createDemoScene(scene);
+    var map = createBattleMap(scene);
+    //var map = createDemoScene(scene);
+
+
+
+
+
 
     // Ajout du joueur
     createPlayer(scene, camera);                
@@ -92,7 +115,6 @@ function runDemo(canvasId) {
             }
         }
     }));
-    var hp=5;
     var bullets = [];
     var autoFire = setInterval(fire, 0);
     clearInterval(autoFire);
@@ -153,6 +175,7 @@ function runDemo(canvasId) {
     var joueurs=[];
     var pseudos=[];
     socket.on('connexion', function(p) {
+        appendChat(p+" viens de se connecter");
         socket.emit('replyPseudo', pseudo);
         var enemy = createEnemy(scene, camera, p) ;
         joueurs.push(enemy);
@@ -231,7 +254,10 @@ function runDemo(canvasId) {
 
             }
         }
-        alert('un joueur viens de se deconnecter');
+        appendChat(nomJoueur+' viens de se deconnecter');
+    })
+    socket.on('message', function(s) {
+        appendChat(s);
     })
     var posjoueur;
     var rotjoueur;

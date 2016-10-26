@@ -1,9 +1,25 @@
 var EnemyBullet = function (posbullet, directionbullet, scene, pseudobullet) {
     // 1. Création du mesh et du material de la munition
     var mesh = BABYLON.Mesh.CreateSphere("bullet", 1, 1, scene);
-    mesh.material = new BABYLON.StandardMaterial("bMat", scene);
-    mesh.tag=pseudobullet
-    mesh.material.diffuseColor = new BABYLON.Color3(1, 0, 0);
+    mesh.material = new BABYLON.StandardMaterial("texture1", scene);
+    mesh.material.alpha =0;
+    mesh.tag=pseudobullet;
+    var particleSystem = new BABYLON.ParticleSystem("particles", 20000, scene/*, customEffect*/);
+    particleSystem.particleTexture = new BABYLON.Texture("../textures/particles.png", scene);
+    particleSystem.textureMask = new BABYLON.Color4(0, 01, 01, 1.0);
+    particleSystem.emitter = mesh; 
+    particleSystem.updateSpeed = 0.005;
+    particleSystem.minLifeTime = 0.01;
+    particleSystem.maxLifeTime = 0.1;
+    particleSystem.gravity = new BABYLON.Vector3(0, -9.81, 0);
+
+
+    // Emission rate
+    particleSystem.emitRate = 500;
+    particleSystem.minEmitPower = 10; 
+    particleSystem.maxEmitPower = 30;
+    particleSystem.start();
+
 
     if(mesh.tag==pseudo){
         mesh.position=posbullet;
@@ -50,7 +66,7 @@ var EnemyBullet = function (posbullet, directionbullet, scene, pseudobullet) {
     }, 5000);
 
     // La vitesse est publique, on peut la modifier facilement
-    this.speed = 5;
+    this.speed = 15;
 
     // 5. Logique de mise à jour
     this.update = function () {
@@ -83,12 +99,13 @@ var EnemyBullet = function (posbullet, directionbullet, scene, pseudobullet) {
                 i++;
             }
             if (meshToRemove) { 
-                //hp=hp-1;
-                //if(hp = 0){
-                alert('T mor dan lgame frr'+mesh.tag);
-                //  hp=5;
-                //}
-                //meshToRemove.dispose();
+                lossOfHP();
+                appendChat(mesh.tag+" t'as touché");
+                if(hp<=0){
+                    alert('T mor dan lgame frr '+mesh.tag);
+                    respawn();
+
+                }
                 return true;
             }
         }
@@ -111,7 +128,39 @@ function createDemoScene(scene) {
         for(var i=0;i<newMeshes.length;i++){
             newMeshes[i].dispose;
         }
+        return newMesh;
     });
+
+}
+function createBattleMap(scene){
+    var groundMaterial = new BABYLON.StandardMaterial("texture1", scene);
+    var objectMaterial = new BABYLON.StandardMaterial("texture2", scene);
+    groundMaterial.diffuseColor = new BABYLON.Color3(0, 0.2, 0.7);
+    objectMaterial.diffuseColor = new BABYLON.Color3(0, 1, 0.7);
+
+    var ground = BABYLON.Mesh.CreateGround("ground", 500, 500, 2, scene);
+    ground.checkCollisions=true;
+    ground.material = groundMaterial;
+
+    var knot = BABYLON.Mesh.CreateTorusKnot("knot", 40, 10, 128, 64, 2, 3, scene, false, BABYLON.Mesh.DEFAULTSIDE);
+    knot.checkCollisions=true;
+    knot.material = objectMaterial;
+
+    var cylinder = BABYLON.Mesh.CreateCylinder("cylinder", 100, 40, 40, 6, 1, scene);
+    cylinder.position = new BABYLON.Vector3(-100,50,200);
+    cylinder.checkCollisions=true;
+    cylinder.material = objectMaterial;
+
+
+    var box = BABYLON.Mesh.CreateBox("box", 60, scene);
+    box.position.x = -200; 
+    box.position.z = -100;
+    box.rotation.x = Math.PI/7; 
+    box.rotation.y = Math.PI/5; 
+    box.rotation.z = Math.PI/2; 
+    box.checkCollisions=true;
+
+
 }
 var weapon;
 var hand;
@@ -209,7 +258,6 @@ var cameraJump = function(scene, camera) {
     a.setEasingFunction(easingFunction);
     cam.animations.push(a);
     scene.beginAnimation(cam, 0, 20, false);
-    camera.applyGravity = true;
 
 } 
 var oliveJump = function(scene, camera) {
@@ -231,7 +279,6 @@ var oliveJump = function(scene, camera) {
     a.setEasingFunction(easingFunction);
     cam.animations.push(a);
     scene.beginAnimation(cam, 0, 10, false);
-    camera.applyGravity = true;
 
 
 
@@ -274,7 +321,7 @@ var giffleAnimation = function(scene, hand, player) {
     // Animation keys
     var keys = [];
     keys.push({ frame: 0, value: prt.position.z - prt.position.z+3});
-    keys.push({ frame: 10, value: prt.position.z - prt.position.z+30});
+    keys.push({ frame: 10, value: prt.position.z - prt.position.z+50});
     keys.push({ frame: 20, value: prt.position.z - prt.position.z+3});
 
     b.setKeys(keys);
@@ -331,7 +378,16 @@ var sortirArme = function(scene, weapon, camera, varY) {
 
     scene.beginAnimation(weapon, 0, 50, false);
 } 
-
+function lossOfHP(){
+    hp=hp-random(20,40);
+    $(".actualLife").width(hp + '%');
+}
+function respawn(){
+    camera.position.x=random(-200,200);
+    camera.position.z=random(-200,200);
+    hp=100;
+    $(".actualLife").width(hp + '%');
+}
 function random(min, max) {
     return (Math.random() * (max - min) + min);
 }

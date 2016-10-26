@@ -1,5 +1,5 @@
-var http = require('http');
-var fs = require('fs');
+var http            = require('http');
+var fs              = require('fs');
 var express         = require('express');
 var app             = express();
 var verbose         = false;
@@ -41,7 +41,7 @@ io.sockets.on('connection', function (socket, pseudo) {
 
 
     // Quand un client se connecte, on lui envoie un message
-    //socket.emit('message', 'Vous êtes bien connecté !');
+    socket.emit('message', 'Vous êtes bien connecté !');
     // On signale aux autres clients qu'il y a un nouveau venu
 
     // Dès qu'on nous donne un pseudo, on le stocke en variable de session
@@ -51,6 +51,9 @@ io.sockets.on('connection', function (socket, pseudo) {
         socket.broadcast.emit('connexion', pseudo);
         logged = true;
     });
+    socket.on('replyPseudo', function(p) {
+        socket.broadcast.emit('broadcastPseudo',p);
+    }); 
 
     //écoute des position
     socket.on('position', function(position) {
@@ -69,11 +72,9 @@ io.sockets.on('connection', function (socket, pseudo) {
     // Dès qu'on reçoit un "message" (clic sur le bouton), on le note dans la console
     socket.on('message', function (message) {
         // On récupère le pseudo de celui qui a cliqué dans les variables de session
-        console.log(socket.pseudo + ' me parle ! Il me dit : ' + message);
+        console.log(socket.pseudo + ' sent message : ' + message);
     }); 
-    socket.on('replyPseudo', function(p) {
-        socket.broadcast.emit('broadcastPseudo',p);
-    }); 
+
 
 
     //gestion des attaques
@@ -94,4 +95,33 @@ io.sockets.on('connection', function (socket, pseudo) {
 
 
 
+
 server.listen(80);
+var world = function(){
+    this.height = random(1,10);
+    this.witdh = random(200,300);
+    this.lenght = random(200,300);
+    this.asString = "";
+
+    for(var i = 0 ; i <= this.witdh ; i++){
+        for(var j = 0 ; j <= this.lenght ; j++){
+            for(var k = 0 ; k <= this.height ; k++){
+                if(k==0){
+                    this.asString=this.asString+""+i+","+j+","+k+";";
+                }
+                else
+                {
+                    if(random(0,2)<=1){
+                        this.asString=this.asString+""+i+","+j+","+k+";";
+                    }
+                }
+            }
+        }
+    }
+    console.log(this.asString);
+}
+
+function random(min, max) {
+    return (Math.random() * (max - min) + min);
+}
+var map = new world;
