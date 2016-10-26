@@ -162,6 +162,22 @@ function createBattleMap(scene){
 
 
 }
+function getServerMap(scene){
+    socket.emit('serverMapRequest');
+}
+function createServerMap(s, scene){
+    var arrayOfBoxes=s.split(";");
+    //alert(arrayOfBoxes.length);
+    for(var i = 0 ;i<arrayOfBoxes.length;i++){
+        //alert("creation d'une box");
+        var box = BABYLON.Mesh.CreateBox("box", 10, scene);
+        box.position.x = arrayOfBoxes[i].split(",")[0]*10; 
+        box.position.z = arrayOfBoxes[i].split(",")[1]*10; 
+        box.position.y = arrayOfBoxes[i].split(",")[2]*10; 
+        box.checkCollisions=true;
+    }
+
+}
 var weapon;
 var hand;
 function createPlayer(scene, camera) {
@@ -246,7 +262,6 @@ var cameraJump = function(scene, camera) {
         "position.y", 20,
         BABYLON.Animation.ANIMATIONTYPE_FLOAT,
         BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-
     // Animation keys
     var keys = [];
     keys.push({ frame: 0, value: cam.position.y });

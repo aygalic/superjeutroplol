@@ -52,15 +52,15 @@ function runDemo(canvasId) {
 
 
     // Ajout d'une lumière
-    
+
     var light0 = new BABYLON.HemisphericLight("Hemi0", new BABYLON.Vector3(0, 1, 0), scene);
     light0.diffuse = new BABYLON.Color3(1, 1, 1);
     light0.specular = new BABYLON.Color3(1, 1, 1);
     light0.groundColor = new BABYLON.Color3(0, 0, 0);
-    
-    
 
-    
+
+
+
     /*
     var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 20, 100), scene);
     var godrays = new BABYLON.VolumetricLightScatteringPostProcess('godrays', 1, camera, null, 100, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false);
@@ -78,9 +78,15 @@ function runDemo(canvasId) {
 
 
     // Enfin la scène de démo
-    var map = createBattleMap(scene);
+    //var map = createBattleMap(scene);
+
     //var map = createDemoScene(scene);
 
+    getServerMap(scene);
+    socket.on('serverMapReply', function(s) {
+        var map = createServerMap(s, scene);
+
+    })
 
 
 

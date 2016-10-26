@@ -69,6 +69,13 @@ io.sockets.on('connection', function (socket, pseudo) {
         }
     });
 
+
+    socket.on('serverMapRequest', function(s) {
+        console.log("sending map");
+        socket.emit('serverMapReply',map.asString);
+    });
+
+
     // Dès qu'on reçoit un "message" (clic sur le bouton), on le note dans la console
     socket.on('message', function (message) {
         // On récupère le pseudo de celui qui a cliqué dans les variables de session
@@ -98,21 +105,21 @@ io.sockets.on('connection', function (socket, pseudo) {
 
 server.listen(80);
 var world = function(){
-    this.height = random(1,10);
-    this.witdh = random(200,300);
-    this.lenght = random(200,300);
+    this.height = random(1,2);
+    this.width = random(30,40);
+    this.lenght = random(30,40);
     this.asString = "";
 
-    for(var i = 0 ; i <= this.witdh ; i++){
+    for(var i = 0 ; i <= this.width ; i++){
         for(var j = 0 ; j <= this.lenght ; j++){
             for(var k = 0 ; k <= this.height ; k++){
-                if(k==0){
-                    this.asString=this.asString+""+i+","+j+","+k+";";
+                if(i==0||j==0||k==0||i+1>=this.width||j+1>=this.lenght){
+                    this.asString=this.asString+i+","+j+","+k+";";
                 }
                 else
                 {
-                    if(random(0,2)<=1){
-                        this.asString=this.asString+""+i+","+j+","+k+";";
+                    if(random(0,30)<=1){
+                        this.asString=this.asString+i+","+j+","+k+";";
                     }
                 }
             }
