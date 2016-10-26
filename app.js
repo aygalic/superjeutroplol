@@ -49,7 +49,6 @@ app.get( '/*' , function( req, res, next ) {
 var io = require('socket.io', {
     transports: ['websocket']
 })(http);
-io.listen(server);
 var logged = false;
 io.sockets.on('connection', function (socket, pseudo) {
 
@@ -116,8 +115,9 @@ io.sockets.on('connection', function (socket, pseudo) {
 
 
 
+server.listen(process.env.OPENSHIFT_NODEJS_PORT, process.env.OPENSHIFT_NODEJS_IP);  
 
-server.listen(8080);
+//server.listen(8080);
 var world = function(){
     this.height = random(1,2);
     this.width = random(30,40);
