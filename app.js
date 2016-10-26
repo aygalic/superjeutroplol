@@ -42,13 +42,6 @@ app.get( '/*' , function( req, res, next ) {
 
 
 
-//un test
-app.use(function(req,res,next)
-        res.header("Access-Control-Allow-Origin", "*");
-        res.header("Access-Control-Allow-Headers", "X-Requested-With");
-res.header("Access-Control-Allow-Methods","PUT,POST,GET,DELETE,OPTIONS");
-next();})
-
 // Chargement de socket.io
 var io = require('socket.io', {
     transports: ['websocket']
