@@ -7,11 +7,25 @@ var server          = http.createServer(app);
 
 
 
+var ip = require("ip");
+var ipaddress= ip.address() ;
 
+app.engine('ntl', function (filePath, options, callback) { // define the template engine
+    fs.readFile(filePath, function (err, content) {
+        if (err) return callback(new Error(err));
+        // this is an extremely simple template engine
+        var rendered = content.toString().replace('#ip#', options.ip );
+        return callback(null, rendered);
+    });
+});
+app.set('views', './'); // specify the views directory
+app.set('view engine', 'ntl'); // register the template engine
 
 app.get( '/', function( req, res ){
-    console.log('trying to load %s', __dirname + '/index.html');
-    res.sendFile( '/index.html' , { root:__dirname });
+    /*console.log('trying to load %s', __dirname + '/index.html');
+    res.sendFile( '/index.html' , { root:__dirname });*/
+    res.render('index', { ip: ipaddress});
+
 });
 app.get( '/*' , function( req, res, next ) {
 
