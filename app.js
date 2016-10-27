@@ -3,7 +3,7 @@ var config = require('./config');
 
 var express         = require('express');
 var app             = express();
-var http            = require('http').Server(app);
+var http            = require('http');
 var fs              = require('fs');
 var verbose         = false;
 var server          = http.createServer(app);
