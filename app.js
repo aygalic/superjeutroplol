@@ -1,11 +1,23 @@
-var http            = require('http');
-var fs              = require('fs');
+var config = require('./config');
+
+
 var express         = require('express');
 var app             = express();
+var http            = require('http').Server(app);
+var fs              = require('fs');
 var verbose         = false;
 var server          = http.createServer(app);
 var ip              = require("ip");
 var ipaddress       = ip.address() ;
+
+// Chargement de socket.io
+var io = require('socket.io', {
+    transports: ['websocket']
+})(http);
+
+console.log("Trying to start server with config:", config.serverip + ":" + config.serverport);
+
+
 
 app.engine('ntl', function (filePath, options, callback) { // define the template engine
     fs.readFile(filePath, function (err, content) {
@@ -42,10 +54,7 @@ app.get( '/*' , function( req, res, next ) {
 
 
 
-// Chargement de socket.io
-var io = require('socket.io', {
-    transports: ['websocket']
-})(http);
+
 var logged = false;
 io.sockets.on('connection', function (socket, pseudo) {
 
