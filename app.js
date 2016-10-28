@@ -1,16 +1,49 @@
 var fs              = require('fs');
-var express         = require('express');
-var app             = express();
+var app             = require('express')();
 var verbose         = false;
 //var server          = http.createServer(app);
 //var http            = require('http');
-var server = require('http').Server(app)
-
-var io = require('socket.io').listen(server);
-
-
+//var server = require('http').Server(app)
+//var io = require('socket.io').listen(server);
 var ip = require("ip");
 var ipaddress= ip.address() ;
+
+
+
+
+var osipaddress = process.env.OPENSHIFT_NODEJS_IP;
+var osport = process.env.OPENSHIFT_NODEJS_PORT;
+
+app.set('port', osport || 3000);
+app.set('ipaddress', osipaddress);
+...
+
+var server = http.createServer(app);
+var io = require('socket.io').listen(server);
+
+io.sockets.on('connection', function(socket){ 
+    socket.emit('news', { hello: 'world' });
+        socket.on('my other event', function (data) {
+            console.log(data);
+        });
+        //some more code here
+});
+
+server.listen(app.get('port'), app.get('ipaddress'), function(){
+    console.log('Express server listening on port ' + app.get('port'));
+});
+
+
+
+
+
+
+
+
+
+
+
+
 
 app.engine('ntl', function (filePath, options, callback) { // define the template engine
     fs.readFile(filePath, function (err, content) {

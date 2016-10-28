@@ -38,13 +38,19 @@
             $(".actualLife").width(hp + '%');
             $(".userInterface").hide();
             //var socket = io.connect('http://#ip#:8080');
-                var socket = io.connect('http://blockshoter-blockshoter.44fs.preview.openshiftapps.com:8000/', {'forceNew':true });
+            (function() {
+              var socket;
 
-            var socket = io.connect('ws://you-app.rhcloud.com:8000/');
-            socket.on('news', function (data) {
+              socket = io.connect('http://blockshoter-blockshoter.44fs.preview.openshiftapps.com:8000');
+
+              socket.on('news', function(data) {
                 console.log(data);
-            socket.emit('my other event', { my: 'data' });
-            });
+                socket.emit('my other event', {
+                  my: 'data'
+                });
+              });
+
+            }).call(this);
             $(document).ready(function(){
                 $('#btnPseudo').click(function() {
                     pseudo=$('#pseudo').val().toString();
