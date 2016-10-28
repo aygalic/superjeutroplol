@@ -38,7 +38,6 @@
             $(".actualLife").width(hp + '%');
             $(".userInterface").hide();
             //var socket = io.connect('http://#ip#:8080');
-            (function() {
               var socket;
 
               socket = io.connect('http://blockshoter-blockshoter.44fs.preview.openshiftapps.com:8000');
@@ -50,7 +49,6 @@
                 });
               });
 
-            }).call(this);
             $(document).ready(function(){
                 $('#btnPseudo').click(function() {
                     pseudo=$('#pseudo').val().toString();
