@@ -27,13 +27,7 @@ var server = http.createServer(app);
 var io = require('socket.io', {
     transports: ['websocket']
 })(http);
-io.sockets.on('connection', function(socket){ 
-    socket.emit('news', { hello: 'world' });
-    socket.on('my other event', function (data) {
-        console.log(data);
-    });
-    //some more code here
-});
+
 
 server.listen(app.get('port'), app.get('ipaddress'), function(){
     console.log('Express server listening on port ' + app.get('port'));
@@ -156,7 +150,7 @@ io.sockets.on('connection', function (socket, pseudo) {
 
 
 
-server.listen(8080);
+//server.listen(8080);
 
 var world = function(){
     this.height = random(1,2);
