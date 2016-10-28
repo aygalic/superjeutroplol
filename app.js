@@ -1,9 +1,11 @@
+var PORT = process.env.OPENSHIFT_INTERNAL_PORT || process.env.OPENSHIFT_NODEJS_PORT  || 8080;
+var IPADDRESS = process.env.OPENSHIFT_INTERNAL_IP || process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
+
 var fs              = require('fs');
 var app             = require('express')();
 var verbose         = false;
 //var server          = http.createServer(app);
 var http            = require('http');
-//var server = require('http').Server(app)
 //var io = require('socket.io').listen(server);
 var ip = require("ip");
 var ipaddress= ip.address() ;
@@ -11,11 +13,9 @@ var ipaddress= ip.address() ;
 
 
 
-var osipaddress = process.env.OPENSHIFT_NODEJS_IP;
-var osport = process.env.OPENSHIFT_NODEJS_PORT;
 
-app.set('port', osport || 8080);
-app.set('ipaddress', osipaddress);
+app.set('port', PORT || 8080);
+app.set('ipaddress', IPADDRESS);
 app.use(function(req,res,next){
 
     res.header("Access-Control-Allow-Origin", "*");
@@ -29,6 +29,72 @@ server.listen(app.get('port'), app.get('ipaddress'), function(){
     console.log('Express server listening on port ' + app.get('port'));
 });
 var io = require('socket.io').listen(server);
+
+
+
+
+
+
+
+
+// Import our common modules.
+var Handlebars = require('./common/handlebars').Handlebars;
+var Message = require('./common/models').Message;
+var User = require('./common/models').User;
+// Grab any arguments that are passed in.
+var argv = require('optimist').argv;
+
+
+// Allow cross origin requests.
+app.use(function(req, res, next) {
+    var origin = '*';
+    try {
+        var parts = req.headers.referer.split('/').filter(function(n){return n;});
+        if (parts.length >= 2){
+            origin = parts[0] + '//' + parts[1];
+        }
+    } catch (e) {
+        // no referrer
+    }
+
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+    next();
+});
+app.use('/varSocketURI.js', function(req, res) {
+    var port = argv['websocket-port'];
+    // Modify the URI only if we pass an optional connection port in.
+    var socketURI = port ? ':'+port+'/' : '/';
+    res.set('Content-Type', 'text/javascript');
+    res.send('var socketURI=window.location.hostname+"'+socketURI+'";');
+});
+
+// Our express application functions as our main listener for HTTP requests
+// in this example which is why we don't just invoke listen on the app object.
+server = require('http').createServer(app);
+server.listen(PORT, IPADDRESS);
+
+
+
+
+
+// socket.io augments our existing HTTP server instance.
+io = require('socket.io').listen(server);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

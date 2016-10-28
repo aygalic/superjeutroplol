@@ -38,7 +38,8 @@
             $(".actualLife").width(hp + '%');
             $(".userInterface").hide();
             //var socket = io.connect('http://#ip#:8080');
-              var socket = io.connect('http://blockshoter-blockshoter.44fs.preview.openshiftapps.com:8000');
+            //var socket = io.connect('http://blockshoter-blockshoter.44fs.preview.openshiftapps.com:8000');
+            var socket = io.connect(socketURI);
 
               socket.on('news', function(data) {
                 console.log(data);
