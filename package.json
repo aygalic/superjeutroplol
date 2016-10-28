@@ -4,7 +4,7 @@
   "description": "first personal shoter multiplayer with map interaction ",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
+    "start": "node app.js --websocket-port=8000 --log-level=1",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

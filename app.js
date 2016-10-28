@@ -24,14 +24,12 @@ app.use(function(req,res,next){
     next();})
 
 var server = http.createServer(app);
-var io = require('socket.io', {
-    transports: ['websocket']
-})(http);
-
 
 server.listen(app.get('port'), app.get('ipaddress'), function(){
     console.log('Express server listening on port ' + app.get('port'));
 });
+var io = require('socket.io').listen(server);
+
 
 
 
