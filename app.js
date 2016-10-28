@@ -1,10 +1,12 @@
-var http            = require('http');
 var fs              = require('fs');
 var express         = require('express');
 var app             = express();
 var verbose         = false;
-var server          = http.createServer(app);
+//var server          = http.createServer(app);
+//var http            = require('http');
+var server = require('http').Server(app)
 
+var io = require('socket.io').listen(server);
 
 
 var ip = require("ip");
@@ -48,8 +50,6 @@ app.get( '/*' , function( req, res, next ) {
 
 
 
-// Chargement de socket.io
-var io = require('socket.io').listen(server);
 var logged = false;
 io.sockets.on('connection', function (socket, pseudo) {
 
@@ -117,7 +117,8 @@ io.sockets.on('connection', function (socket, pseudo) {
 
 
 
-server.listen(8080);
+//server.listen(8080);
+server.listen(process.env.OPENSHIFT_NODEJS_PORT, process.env.OPENSHIFT_NODEJS_IP);
 var world = function(){
     this.height = random(1,2);
     this.width = random(30,40);
