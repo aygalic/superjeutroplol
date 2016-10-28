@@ -118,6 +118,8 @@ io.sockets.on('connection', function (socket, pseudo) {
 
 
 //server.listen(8080);
+console.log(process.env.OPENSHIFT_NODEJS_PORT);
+console.log(process.env.OPENSHIFT_NODEJS_IP);
 server.listen(process.env.OPENSHIFT_NODEJS_PORT, process.env.OPENSHIFT_NODEJS_IP);
 var world = function(){
     this.height = random(1,2);
