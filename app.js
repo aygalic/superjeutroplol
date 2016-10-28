@@ -16,18 +16,23 @@ var osport = process.env.OPENSHIFT_NODEJS_PORT;
 
 app.set('port', osport || 8080);
 app.set('ipaddress', osipaddress);
+app.use(function(req,res,next){
 
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "X-Requested-With");
+    res.header("Access-Control-Allow-Methods","PUT,POST,GET,DELETE,OPTIONS");
+    next();})
 
 var server = http.createServer(app);
 var io = require('socket.io', {
-        transports: ['websocket']
-    })(http);
+    transports: ['websocket']
+})(http);
 io.sockets.on('connection', function(socket){ 
     socket.emit('news', { hello: 'world' });
-        socket.on('my other event', function (data) {
-            console.log(data);
-        });
-        //some more code here
+    socket.on('my other event', function (data) {
+        console.log(data);
+    });
+    //some more code here
 });
 
 server.listen(app.get('port'), app.get('ipaddress'), function(){
