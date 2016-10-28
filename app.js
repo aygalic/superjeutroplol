@@ -16,7 +16,7 @@ var osport = process.env.OPENSHIFT_NODEJS_PORT;
 
 app.set('port', osport || 3000);
 app.set('ipaddress', osipaddress);
-...
+
 
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
