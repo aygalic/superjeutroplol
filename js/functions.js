@@ -167,7 +167,7 @@ function getServerMap(scene){
 }
 function createServerMap(s, scene){
     var arrayOfBoxes=s.split(";");
-    var arrayOfMeshes;
+    var arrayOfMeshes=[];
     //alert(arrayOfBoxes.length);
     for(var i = 0 ;i<arrayOfBoxes.length;i++){
         //alert("creation d'une box");
