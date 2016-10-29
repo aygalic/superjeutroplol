@@ -24,15 +24,10 @@
             <div id="interface"><h1>I</h1></div>
             <div id="chat"></div>
         </div>
-
         <script src="js/scripts/jquery-3.1.1.min.js"></script>
-
         <link rel="stylesheet" href="css/bootstrap.min.css">
-
         <script src="js/scripts/bootstrap.min.js"></script>
-
         <script src="js/scripts/socket.io.js"></script>
-
         <script type="text/javascript">
             var pseudo=null;
             var hp=100;
@@ -52,7 +47,6 @@
                     }
                 });
             });
-
         </script>
         <script src="js/scripts/babylon.2.4.js"></script>
         <script src="js/scripts/cannon.min.js"></script>
