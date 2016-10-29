@@ -10,6 +10,11 @@ var server          = http.createServer(app);
 var ip = require("ip");
 var ipaddress= ip.address() ;
 
+
+
+
+
+
 app.engine('ntl', function (filePath, options, callback) { // define the template engine
     fs.readFile(filePath, function (err, content) {
         if (err) return callback(new Error(err));
@@ -49,7 +54,7 @@ app.get( '/*' , function( req, res, next ) {
 
 
 // Chargement de socket.io
-var socketIO = require('socket.io').listen(server);
+var socketIO = require('socket.io');
 const io = socketIO(server);
 
 var logged = false;
