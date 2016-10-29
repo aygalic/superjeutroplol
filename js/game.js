@@ -80,12 +80,12 @@ function runDemo(canvasId) {
 
     // Enfin la scène de démo
 
-    //var map = createDemoScene(scene);
+    var map = createDemoScene(scene);
 
-    getServerMap(scene);
+    /*getServerMap(scene);
     socket.on('serverMapReply', function(s) {
         createServerMap(s, scene);
-    })
+    })*/
 
 
 
