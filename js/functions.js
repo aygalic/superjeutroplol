@@ -167,6 +167,7 @@ function getServerMap(scene){
 }
 function createServerMap(s, scene){
     var arrayOfBoxes=s.split(";");
+    var arrayOfMeshes;
     //alert(arrayOfBoxes.length);
     for(var i = 0 ;i<arrayOfBoxes.length;i++){
         //alert("creation d'une box");
@@ -175,7 +176,10 @@ function createServerMap(s, scene){
         box.position.z = arrayOfBoxes[i].split(",")[1]*10; 
         box.position.y = arrayOfBoxes[i].split(",")[2]*10; 
         box.checkCollisions=true;
+        arrayOfMeshes.push(box);
     }
+    var map =  BABYLON.Mesh.MergeMeshes(arrayOfMeshes);
+    return map;
 
 }
 var weapon;

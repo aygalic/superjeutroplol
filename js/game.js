@@ -1,4 +1,5 @@
 function runDemo(canvasId) {
+    
     var canvas = document.getElementById(canvasId);
     var engine = new BABYLON.Engine(canvas, true);
     // Création de la scène
