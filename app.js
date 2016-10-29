@@ -49,7 +49,9 @@ app.get( '/*' , function( req, res, next ) {
 
 
 // Chargement de socket.io
-var io = require('socket.io').listen(server);
+var socketIO = require('socket.io').listen(server);
+const io = socketIO(server);
+
 var logged = false;
 io.sockets.on('connection', function (socket, pseudo) {
 
