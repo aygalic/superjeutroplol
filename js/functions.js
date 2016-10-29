@@ -132,61 +132,26 @@ function createDemoScene(scene) {
     });
 
 }
-function createBattleMap(scene){
-    var groundMaterial = new BABYLON.StandardMaterial("texture1", scene);
-    var objectMaterial = new BABYLON.StandardMaterial("texture2", scene);
-    groundMaterial.diffuseColor = new BABYLON.Color3(0, 0.2, 0.7);
-    objectMaterial.diffuseColor = new BABYLON.Color3(0, 1, 0.7);
 
-    var ground = BABYLON.Mesh.CreateGround("ground", 500, 500, 2, scene);
-    ground.checkCollisions=true;
-    ground.material = groundMaterial;
-
-    var knot = BABYLON.Mesh.CreateTorusKnot("knot", 40, 10, 128, 64, 2, 3, scene, false, BABYLON.Mesh.DEFAULTSIDE);
-    knot.checkCollisions=true;
-    knot.material = objectMaterial;
-
-    var cylinder = BABYLON.Mesh.CreateCylinder("cylinder", 100, 40, 40, 6, 1, scene);
-    cylinder.position = new BABYLON.Vector3(-100,50,200);
-    cylinder.checkCollisions=true;
-    cylinder.material = objectMaterial;
-
-
-    var box = BABYLON.Mesh.CreateBox("box", 60, scene);
-    box.position.x = -200; 
-    box.position.z = -100;
-    box.rotation.x = Math.PI/7; 
-    box.rotation.y = Math.PI/5; 
-    box.rotation.z = Math.PI/2; 
-    box.checkCollisions=true;
-
-
-}
 function getServerMap(scene){
     socket.emit('serverMapRequest');
 }
 function createServerMap(s, scene){
     var arrayOfBoxes=s.split(";");
-    var arrayOfMeshes=[];
-    //alert(arrayOfBoxes.length);
+    var map = [];
     for(var i = 0 ;i<arrayOfBoxes.length;i++){
-        //alert("creation d'une box");
         var box = BABYLON.Mesh.CreateBox("box", 10, scene);
         box.position.x = arrayOfBoxes[i].split(",")[0]*10; 
         box.position.z = arrayOfBoxes[i].split(",")[1]*10; 
         box.position.y = arrayOfBoxes[i].split(",")[2]*10; 
-        
-        arrayOfMeshes.push(box);
+        box.checkCollisions=true;
     }
-    var map =  BABYLON.Mesh.MergeMeshes(arrayOfMeshes);
-    map.checkCollisions=true;
-    return map;
 
 }
 var weapon;
 var hand;
 function createPlayer(scene, camera) {
-    var hitbox = BABYLON.Mesh.CreateBox("", 3.0, scene);//lala
+    var hitbox = BABYLON.Mesh.CreateBox("", 3.0, scene);
     hitbox.parent=camera;
     var materialAlpha = new BABYLON.StandardMaterial("texture1", scene);
     hitbox.material =materialAlpha;

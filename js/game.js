@@ -1,10 +1,10 @@
 function runDemo(canvasId) {
-    
+
     var canvas = document.getElementById(canvasId);
     var engine = new BABYLON.Engine(canvas, true);
     // Création de la scène
     var scene = new BABYLON.Scene(engine);
-    scene.gravity = new BABYLON.Vector3(0, -1, 0);
+    scene.gravity = new BABYLON.Vector3(0, -0.2, 0);
     scene.collisionsEnabled = true;
     // Ajout d'une caméra et de son contrôleur
     camera = new BABYLON.FreeCamera("MainCamera", new BABYLON.Vector3(0, 2.5, 5), scene);
@@ -79,14 +79,12 @@ function runDemo(canvasId) {
 
 
     // Enfin la scène de démo
-    //var map = createBattleMap(scene);
 
     //var map = createDemoScene(scene);
 
     getServerMap(scene);
     socket.on('serverMapReply', function(s) {
-        var map = createServerMap(s, scene);
-
+        createServerMap(s, scene);
     })
 
 
