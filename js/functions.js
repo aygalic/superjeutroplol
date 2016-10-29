@@ -175,10 +175,11 @@ function createServerMap(s, scene){
         box.position.x = arrayOfBoxes[i].split(",")[0]*10; 
         box.position.z = arrayOfBoxes[i].split(",")[1]*10; 
         box.position.y = arrayOfBoxes[i].split(",")[2]*10; 
-        box.checkCollisions=true;
+        
         arrayOfMeshes.push(box);
     }
     var map =  BABYLON.Mesh.MergeMeshes(arrayOfMeshes);
+    map.checkCollisions=true;
     return map;
 
 }
