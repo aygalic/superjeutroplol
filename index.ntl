@@ -35,7 +35,8 @@
             $(".actualLife").width(hp + '%');
             $(".userInterface").hide();
             //var socket = io.connect('http://192.168.43.43:80');
-            var socket = io.connect('http://#ip#:8080');
+            //var socket = io.connect('http://#ip#:8080');
+            var socket = io();
             $(document).ready(function(){
                 $('#btnPseudo').click(function() {
                     pseudo=$('#pseudo').val().toString();
